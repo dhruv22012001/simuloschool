@@ -124,3 +124,4 @@ Defined as named constants in `backend/app/core/config.py`:
 - Generated quizzes land in `pending_review` for admin approval before
   `published`; published videos are visible to all students.
 # simuloschool
+# simuloschool
