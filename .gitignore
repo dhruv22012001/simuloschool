@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Frontend local config (copy from config.example.js)
+frontend/js/config.js
+
+# OS
+.DS_Store

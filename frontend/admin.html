@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin — Saarthi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,450;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Baloo+2:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css?v=6" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a class="logo" href="index.html">Saarthi <span>•</span></a>
+        <div class="nav-right">
+          <a href="lessons.html">Lessons</a>
+          <span id="user-name"></span>
+          <button id="logout" class="nav-cta">Log out</button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="wrap">
+      <div class="page-head">
+        <span class="eyebrow">Admin</span>
+        <h2>Lesson pipeline</h2>
+        <p>
+          Upload a lesson video. The generation job transcribes it, writes the quiz, and
+          parks it here for your review before students ever see it.
+        </p>
+      </div>
+
+      <div class="report-card upload-card">
+        <span class="stamp-tab">New lesson</span>
+        <h3>Upload a video</h3>
+        <form id="upload-form">
+          <label for="title">Lesson title</label>
+          <input id="title" type="text" required placeholder="Why Fractions Have Two Numbers" />
+
+          <label for="video">Video file</label>
+          <input id="video" type="file" accept="video/mp4,video/quicktime,video/webm,video/x-matroska" required />
+
+          <p id="upload-error" class="error" hidden></p>
+          <p id="upload-success" class="success" hidden></p>
+
+          <button id="upload-submit" type="submit" class="btn btn-primary">Upload lesson</button>
+        </form>
+        <p class="microcopy">
+          The quiz starts generating the moment the upload finishes — watch its
+          progress below.
+        </p>
+      </div>
+
+      <h3 class="section-title">All lessons</h3>
+      <p id="list-error" class="error" hidden></p>
+      <div id="pipeline"></div>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js?v=6"></script>
+    <script src="js/pages/admin.js?v=6"></script>
+  </body>
+</html>

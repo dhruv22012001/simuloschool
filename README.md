@@ -4,9 +4,29 @@ Ed-tech MVP: an admin uploads lesson videos, the system auto-generates a
 tiered MCQ quiz per video, any logged-in student can watch any published
 video and take its quiz, and a performance report is emailed to the parent.
 
-**Current state: scaffold.** Auth, schema, health check, video listing, and
-deploy wiring work end to end. Video upload, quiz generation, quiz-taking,
-and report emails come in later iterations.
+**Current state:** auth, schema, video upload, automatic quiz generation
+(Whisper transcription + Claude question writing), admin review/publish, and
+deploy wiring all work end to end. The student quiz-taking flow and the emailed
+parent report come next.
+
+## The lesson pipeline
+
+```
+admin uploads  →  uploaded  →  [generation job]  →  pending_review  →  published
+                                    │                                     │
+                     transcribe (Whisper) + write                  visible to
+                     10 easy / 5 medium / 5 hard MCQs              all students
+                     (Claude, schema-validated)
+                                    │
+                                 failed  ──(admin retries)──▶ uploaded
+```
+
+Questions are generated **once per video** and stored in the `question` table —
+never re-generated per student. Nothing reaches students until an admin reviews
+the questions and clicks publish.
+
+Generation needs two API keys (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`) and
+`ffmpeg` on PATH. The API itself runs fine without them.
 
 ## Layout
 
@@ -48,14 +68,18 @@ uv run uvicorn app.main:app --reload   # admin is seeded on startup
 ```bash
 cd frontend
 cp js/config.example.js js/config.js   # points at http://localhost:8000
-python -m http.server 3000
+python -m http.server 5500
 ```
 
-Open http://localhost:3000/login.html and sign in as the seeded admin.
-`index.html` lists published videos (empty state until upload exists).
+Open http://localhost:5500/ — `index.html` is the Saarthi landing page with a
+Login button; `login.html` signs you in and redirects back to the landing page
+(which then shows a logged-in banner); `lessons.html` lists published videos;
+`admin.html` (admins only) uploads videos and reviews/publishes generated
+quizzes.
 
-> Serve on port 3000 — the backend's default `CORS_ALLOWED_ORIGINS` allows
-> `http://localhost:3000` and `http://127.0.0.1:3000`.
+> Serve on port 5500 or 3000 — the backend's default `CORS_ALLOWED_ORIGINS`
+> allows both (localhost and 127.0.0.1). Note: OrbStack/other tools sometimes
+> occupy port 3000, so 5500 is the safer default.
 
 ## Migrations
 
@@ -85,13 +109,20 @@ Tests are self-contained — no running database or MinIO required.
 
 ## Quiz-generation job
 
-Not an always-on worker: a callable job that processes pending videos and
-exits (currently a stub that logs "no pending videos").
+Not an always-on worker: a callable job that processes queued videos and exits.
+Each run claims up to `GENERATE_BATCH_SIZE` videos with `SELECT … FOR UPDATE
+SKIP LOCKED`, so two concurrent runs never process the same video.
 
 ```bash
 cd backend
+export ANTHROPIC_API_KEY=sk-ant-...   # question generation
+export OPENAI_API_KEY=sk-...          # Whisper transcription
 uv run python -m app.jobs.generate
 ```
+
+Requires `ffmpeg` and `ffprobe` on PATH (`brew install ffmpeg`). Audio is
+downmixed to mono 16 kHz MP3 and split into segments if it exceeds Whisper's
+25 MB upload cap, so lesson length is not a constraint.
 
 In prod, `.github/workflows/generate.yml` runs the same entrypoint on a
 daily cron (02:00 UTC) using GitHub Secrets; it can also be run manually via
@@ -109,7 +140,21 @@ workflow_dispatch.
   identical for MinIO and R2; only env vars differ.
 - Set `CORS_ALLOWED_ORIGINS` on the API to the Static Site URL.
 - GitHub Secrets for the cron job: `DATABASE_URL`, `JWT_SECRET`,
-  `S3_ENDPOINT_URL`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_BUCKET`.
+  `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `S3_ENDPOINT_URL`, `S3_ACCESS_KEY_ID`,
+  `S3_SECRET_ACCESS_KEY`, `S3_BUCKET`.
+
+## API
+
+| Endpoint | Who | What |
+| --- | --- | --- |
+| `POST /auth/login` | anyone | Email + password → JWT |
+| `GET /health` | anyone | DB + storage connectivity |
+| `GET /videos` | any logged-in user | Published videos |
+| `POST /admin/videos` | admin | Upload a video (multipart: `title`, `file`) |
+| `GET /admin/videos` | admin | Every video with pipeline status |
+| `GET /admin/videos/{id}/questions` | admin | Generated questions + answer key |
+| `POST /admin/videos/{id}/publish` | admin | `pending_review` → `published` |
+| `POST /admin/videos/{id}/retry` | admin | `failed` → `uploaded` |
 
 ## Product rules (locked)
 

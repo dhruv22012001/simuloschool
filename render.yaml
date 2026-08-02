@@ -1,0 +1,64 @@
+# Two services from one monorepo:
+#   - backend  -> Render Web Service (FastAPI JSON API)
+#   - frontend -> Render Static Site (plain HTML/CSS/JS)
+# Postgres lives on Neon, object storage on Cloudflare R2 — both configured
+# via env vars below (sync: false = set the value in the Render dashboard).
+
+services:
+  - type: web
+    name: simuloschool-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install uv && uv sync --frozen --no-dev
+    # Migrations run before boot (free tier has no preDeployCommand).
+    startCommand: uv run --no-dev alembic upgrade head && uv run --no-dev uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL # Neon connection string (postgresql+psycopg://...)
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_EXPIRES_MINUTES
+        value: "720"
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        value: Admin
+      - key: CORS_ALLOWED_ORIGINS # the Static Site URL, e.g. https://simuloschool-frontend.onrender.com
+        sync: false
+      # Generation runs in GitHub Actions, not here — these are set so an
+      # operator can run the job manually against prod from a Render shell.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: S3_ENDPOINT_URL # R2: https://<account-id>.r2.cloudflarestorage.com
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_REGION
+        value: auto
+
+  - type: web
+    name: simuloschool-frontend
+    runtime: static
+    rootDir: frontend
+    # Generate js/config.js from the API_BASE_URL env var at build time.
+    buildCommand: 'echo "window.API_BASE_URL = \"$API_BASE_URL\";" > js/config.js'
+    staticPublishPath: .
+    envVars:
+      - key: API_BASE_URL # the Web Service URL, e.g. https://simuloschool-api.onrender.com
+        sync: false

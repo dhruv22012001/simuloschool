@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My Lessons — Saarthi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,450;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Baloo+2:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css?v=6" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a class="logo" href="index.html">Saarthi <span>•</span></a>
+        <div class="nav-right">
+          <a href="admin.html" class="nav-upload">⬆ Upload</a>
+          <span id="user-name"></span>
+          <button id="logout" class="nav-cta">Log out</button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="wrap">
+      <div class="page-head">
+        <span class="eyebrow">Your library</span>
+        <h2>Simulation lessons</h2>
+        <p>One idea. One simulation video. Every single time.</p>
+        <p id="list-error" class="error" hidden></p>
+      </div>
+
+      <div id="empty-state" class="report-card empty-card" hidden>
+        <div class="big-emoji">🎬</div>
+        <h3>No lessons published yet</h3>
+        <p>New simulation lessons land here as soon as they're approved. Check back soon!</p>
+      </div>
+
+      <ul id="video-list" class="video-grid"></ul>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js?v=6"></script>
+    <script src="js/pages/lessons.js?v=6"></script>
+  </body>
+</html>

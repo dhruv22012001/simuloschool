@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign in — Saarthi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,450;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Baloo+2:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css?v=6" />
+  </head>
+  <body class="auth-page">
+    <main class="auth-inner">
+      <div class="logo">Saarthi <span>•</span></div>
+
+      <div class="report-card auth-card">
+        <span class="stamp-tab">Welcome back</span>
+        <span class="eyebrow">Because attendance isn't learning</span>
+        <h1>Sign in</h1>
+        <p class="subtitle">Watch simulation lessons and take your tiered quizzes.</p>
+
+        <form id="login-form">
+          <label for="email">Email</label>
+          <input id="email" type="email" autocomplete="email" required />
+
+          <label for="password">Password</label>
+          <input id="password" type="password" autocomplete="current-password" required />
+
+          <p id="login-error" class="error" hidden></p>
+
+          <button id="login-submit" type="submit" class="btn btn-primary">Sign in</button>
+        </form>
+      </div>
+
+      <p class="microcopy">Every lesson understood. Every parent informed.</p>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js?v=6"></script>
+    <script src="js/pages/login.js?v=6"></script>
+  </body>
+</html>
