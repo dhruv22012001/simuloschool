@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -12,8 +13,27 @@ from app.routers import admin, auth, health, videos
 configure_logging()
 
 
+logger = logging.getLogger(__name__)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Say out loud what this process is configured to talk to. Without it, a
+    # misconfigured deploy looks identical to a broken one in the logs.
+    logger.info(
+        "starting api",
+        extra={
+            "ctx": {
+                "env": settings.app_env,
+                "db_host": settings.database_host,
+                "cors_origins": settings.cors_origins_list,
+                "storage_endpoint": settings.s3_endpoint_url or "(unset)",
+            }
+        },
+    )
+    for problem in settings.validate_for_production():
+        logger.error("configuration problem", extra={"ctx": {"problem": problem}})
+
     seed_admin()
     yield
 
