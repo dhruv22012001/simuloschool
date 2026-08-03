@@ -47,3 +47,33 @@ def test_request_id_is_echoed(client, monkeypatch):
     monkeypatch.setattr(storage, "check_storage", lambda: True)
     resp = client.get("/health", headers={REQUEST_ID_HEADER: "abc123"})
     assert resp.headers[REQUEST_ID_HEADER] == "abc123"
+
+
+def test_unconfigured_storage_is_not_probed(client, monkeypatch):
+    """Blank S3 vars in production fall back to the local MinIO default. Probing
+    it fails on every request and buries real errors under a traceback logged
+    several times a minute, so it reports False without being called."""
+    monkeypatch.setattr(health, "check_db", lambda: True)
+    monkeypatch.setattr(health.settings, "app_env", "production")
+    monkeypatch.setattr(health.settings, "s3_endpoint_url", "http://localhost:9000")
+    monkeypatch.setattr(storage, "check_storage", _boom)
+
+    resp = client.get("/health")
+
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "degraded", "db": True, "storage": False}
+
+
+def test_configured_storage_is_still_probed(client, monkeypatch):
+    """Suppression must not hide an outage of storage that is actually set up."""
+    monkeypatch.setattr(health, "check_db", lambda: True)
+    monkeypatch.setattr(health.settings, "app_env", "production")
+    monkeypatch.setattr(health.settings, "s3_endpoint_url", "https://abc.supabase.co/storage/v1/s3")
+
+    probed = []
+    monkeypatch.setattr(storage, "check_storage", lambda: probed.append(1) or True)
+
+    resp = client.get("/health")
+
+    assert probed == [1]
+    assert resp.json() == {"status": "ok", "db": True, "storage": True}

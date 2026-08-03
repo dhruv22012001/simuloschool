@@ -36,6 +36,9 @@
   nav{ display:flex; align-items:center; justify-content:space-between; padding:18px 32px; max-width:1180px; margin:0 auto; }
   .logo{ font-family:'Fraunces',serif; font-weight:700; font-size:22px; }
   .logo span{ color:var(--marigold-deep); }
+  /* Self-contained page: these heights must live here, the shared
+     stylesheet is not linked. */
+  .logo-h{ height:38px; width:auto; display:block; }
   .nav-cta{ background:var(--ink); color:var(--paper); padding:10px 20px; border-radius:30px; font-size:14px; font-weight:600; }
 
   .eyebrow{ font-family:'Baloo 2',sans-serif; font-size:13px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--marigold-deep); display:inline-flex; align-items:center; gap:8px; margin-bottom:14px; }
@@ -131,6 +134,7 @@
     .wrap{ padding:0 16px; }
     nav{ padding:12px 16px; }
     .logo{ font-size:18px; }
+    .logo-h{ height:30px; }
     .nav-cta{ padding:9px 14px; font-size:13px; }
     .page-head h1{ font-size:26px; }
 
@@ -164,7 +168,7 @@
 
 <header>
   <nav>
-    <a class="logo" href="index.html"><img class="logo-mark" src="img/logo-mark.png" alt="" />simuloschool</a>
+    <a class="logo" href="index.html"><img class="logo-h" src="img/logo-h.png" alt="SimuloSchool" /></a>
     <a href="login.html" class="nav-cta">Login</a>
   </nav>
 </header>

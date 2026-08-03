@@ -54,6 +54,32 @@ def test_production_flags_the_default_jwt_secret():
     assert any("JWT_SECRET" in p for p in settings.validate_for_production())
 
 
+def test_storage_unconfigured_in_production_when_endpoint_is_the_local_default():
+    """Blank S3 vars in the dashboard fall back to the local MinIO default, which
+    production must not treat as a real provider."""
+    settings = Settings(database_url=NEON_URL, s3_endpoint_url="http://localhost:9000", **PROD_ENV)
+    assert settings.storage_configured is False
+
+
+def test_storage_unconfigured_in_production_when_endpoint_is_blank():
+    settings = Settings(database_url=NEON_URL, s3_endpoint_url="  ", **PROD_ENV)
+    assert settings.storage_configured is False
+
+
+def test_storage_configured_in_production_with_a_real_endpoint():
+    settings = Settings(
+        database_url=NEON_URL,
+        s3_endpoint_url="https://abc.supabase.co/storage/v1/s3",
+        **PROD_ENV,
+    )
+    assert settings.storage_configured is True
+
+
+def test_storage_always_configured_locally():
+    """localhost:9000 is the real MinIO container outside production."""
+    assert Settings(s3_endpoint_url="http://localhost:9000").storage_configured is True
+
+
 def test_local_env_is_not_checked():
     """The localhost default is correct locally — flagging it would be noise."""
     settings = Settings(database_url="postgresql+psycopg://u:p@localhost:5432/db")

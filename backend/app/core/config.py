@@ -92,6 +92,19 @@ class Settings(BaseSettings):
         except Exception:
             return "(unparseable)"
 
+    @property
+    def storage_configured(self) -> bool:
+        """Whether object storage has been pointed at a real provider.
+
+        Production leaves the S3 vars blank until a provider is chosen, and
+        blank means the local MinIO defaults apply. Without this the health
+        check dials localhost:9000 from inside the container every few seconds
+        and logs a traceback for a dependency nobody has set up yet.
+        """
+        if not self.is_production:
+            return True
+        return self.s3_endpoint_url.strip() not in ("", "http://localhost:9000")
+
     def validate_for_production(self) -> list[str]:
         """Config mistakes that make a deploy fail in confusing ways.
 

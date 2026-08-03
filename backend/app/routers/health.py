@@ -4,6 +4,7 @@ from fastapi import APIRouter, Response, status
 from sqlalchemy import text
 
 from app.core import storage
+from app.core.config import settings
 from app.core.db import engine
 
 router = APIRouter(tags=["health"])
@@ -27,6 +28,11 @@ def health(response: Response) -> dict:
     """
     checks = {"db": False, "storage": False}
     for name, check in (("db", check_db), ("storage", storage.check_storage)):
+        # Storage that was never configured reports False without being probed.
+        # Dialling the unset local default would fail on every request and bury
+        # real errors under a traceback logged several times a minute.
+        if name == "storage" and not settings.storage_configured:
+            continue
         try:
             checks[name] = bool(check())
         except Exception:

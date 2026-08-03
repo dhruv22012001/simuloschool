@@ -60,15 +60,17 @@ a {
 }
 
 /* Logo images carry an explicit height so the header does not reflow while
-   they load. The supplied artwork is a stacked lockup — legible at the auth
-   pages' size, but not at header height, so headers pair the mark alone with
-   the wordmark set in Fraunces. */
-.logo-mark {
-  height: 30px;
+   they load. The source artwork is a stacked lockup, which goes illegible at
+   header height — the tagline lands around 3px — so headers use a horizontal
+   lockup built from the same mark and wordmark. */
+.logo-h {
+  height: 38px;
   width: auto;
   display: block;
 }
 
+/* Auth pages centre the logo with room to spare, so they show the stacked
+   lockup at full strength. */
 .logo-full {
   height: 84px;
   width: auto;
@@ -78,7 +80,7 @@ a {
 /* The footer sits on --ink, where the lockup's navy would disappear; it uses
    the white knockout instead. */
 .logo-footer {
-  height: 62px;
+  height: 44px;
   width: auto;
   display: block;
 }
@@ -789,6 +791,18 @@ table {
     font-size: 18px;
   }
 
+  .logo-h {
+    height: 30px;
+  }
+
+  .logo-full {
+    height: 66px;
+  }
+
+  .logo-footer {
+    height: 38px;
+  }
+
   .nav-right {
     gap: 8px;
     font-size: 13px;
@@ -906,6 +920,10 @@ table {
 
   .logo {
     font-size: 17px;
+  }
+
+  .logo-h {
+    height: 28px;
   }
 
   .page-head h2 {
