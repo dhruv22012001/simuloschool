@@ -1,4 +1,4 @@
-/* Saarthi design system — tokens and components from the approved design. */
+/* SimuloSchool design system — tokens and components from the approved design. */
 
 :root {
   --ink: #182849;
@@ -57,6 +57,30 @@ a {
 
 .logo span {
   color: var(--marigold-deep);
+}
+
+/* Logo images carry an explicit height so the header does not reflow while
+   they load. The supplied artwork is a stacked lockup — legible at the auth
+   pages' size, but not at header height, so headers pair the mark alone with
+   the wordmark set in Fraunces. */
+.logo-mark {
+  height: 30px;
+  width: auto;
+  display: block;
+}
+
+.logo-full {
+  height: 84px;
+  width: auto;
+  display: block;
+}
+
+/* The footer sits on --ink, where the lockup's navy would disappear; it uses
+   the white knockout instead. */
+.logo-footer {
+  height: 62px;
+  width: auto;
+  display: block;
 }
 
 .eyebrow {

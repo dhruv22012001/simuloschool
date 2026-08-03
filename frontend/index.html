@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Saarthi — Because attendance isn't learning.</title>
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+<title>SimuloSchool — Because attendance isn't learning.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -105,6 +106,10 @@
     display:flex; align-items:center; gap:8px;
   }
   .logo span{ color:var(--marigold-deep); }
+  /* Explicit heights: no header reflow while the artwork loads. */
+  .logo-mark{ height:30px; width:auto; display:block; }
+  /* Footer sits on --ink, where the lockup's navy would vanish. */
+  .logo-footer{ height:62px; width:auto; display:block; }
   .nav-links{ display:flex; gap:34px; font-size:14.5px; font-weight:500; color:var(--ink-soft); }
   .nav-links a:hover{ color:var(--ink); }
   .nav-auth{ display:flex; align-items:center; gap:14px; }
@@ -585,7 +590,7 @@
 
 <header>
   <nav>
-    <div class="logo">Saarthi <span>•</span></div>
+    <div class="logo"><img class="logo-mark" src="img/logo-mark.png" alt="" />simuloschool</div>
     <div class="nav-links">
       <a href="#solution">How it works</a>
       <a href="#features">Features</a>
@@ -689,7 +694,7 @@
 <section class="section-pad" id="solution">
   <div class="wrap">
     <div class="section-head">
-      <span class="eyebrow">The Saarthi way</span>
+      <span class="eyebrow">The SimuloSchool way</span>
       <h2>Meet your child's AI learning companion</h2>
       <p>Not another video lecture. A 15-minute loop built to prove understanding — not just play a video to the end.</p>
     </div>
@@ -729,7 +734,7 @@
     <div class="demo-copy">
       <span class="eyebrow">See a lesson</span>
       <h2>This is what "learning," not "watching," looks like.</h2>
-      <p>A 90-second look at a real Saarthi session — from simulation video to flashcard to the report that lands in your inbox after.</p>
+      <p>A 90-second look at a real SimuloSchool session — from simulation video to flashcard to the report that lands in your inbox after.</p>
       <ul class="demo-list">
         <li><b>0:00</b> A simulation video breaks a concept into something your child can see move, not just hear explained.</li>
         <li><b>0:35</b> A flashcard round checks if it actually stuck.</li>
@@ -925,7 +930,7 @@
     <div class="section-head">
       <span class="eyebrow">Why it actually works</span>
       <h2>Built on how children really remember things</h2>
-      <p>Every part of a Saarthi session exists because of one of these four ideas.</p>
+      <p>Every part of a SimuloSchool session exists because of one of these four ideas.</p>
     </div>
     <div class="sci-grid">
       <div class="sci-card"><div class="stat">2×</div><p>Active recall — flashcards and quizzes — helps children remember far more than re-reading or rewatching.</p></div>
@@ -1103,7 +1108,7 @@
   <div class="wrap">
     <div class="footer-grid">
       <div>
-        <div class="logo" style="color:#fff;">Saarthi <span>•</span></div>
+        <div class="logo"><img class="logo-footer" src="img/logo-full-light.png" alt="SimuloSchool" /></div>
         <p class="footer-tagline">"Every lesson understood.<br>Every parent informed."</p>
         <p style="font-size:12.5px; color:#8E9BC4; margin-top:14px; max-width:240px;">Simulation videos, gamified practice, and honest reports — for grades 1 to 9.</p>
       </div>
@@ -1131,7 +1136,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2026 Saarthi Learning. All rights reserved.</span>
+      <span>© 2026 SimuloSchool. All rights reserved.</span>
       <span>Instagram · LinkedIn · YouTube</span>
     </div>
   </div>
