@@ -124,6 +124,13 @@ Requires `ffmpeg` and `ffprobe` on PATH (`brew install ffmpeg`). Audio is
 downmixed to mono 16 kHz MP3 and split into segments if it exceeds Whisper's
 25 MB upload cap, so lesson length is not a constraint.
 
+The video never leaves our infrastructure: the job pulls it from R2, ffmpeg
+reduces it to ~240 KB/min of mono audio, and only that audio goes to Whisper —
+only the resulting transcript goes to Claude. Transcription is the hosted API
+only (`TRANSCRIPTION_PROVIDER=openai`, the default); the in-process
+faster-whisper path was removed because it dragged ctranslate2/onnxruntime into
+every deploy build for a branch that never ran once `OPENAI_API_KEY` was set.
+
 In prod, `.github/workflows/generate.yml` runs the same entrypoint on a
 daily cron (02:00 UTC) using GitHub Secrets; it can also be run manually via
 workflow_dispatch.

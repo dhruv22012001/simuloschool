@@ -42,17 +42,13 @@ class Settings(BaseSettings):
     # Quiz generation (Claude) and transcription (Whisper)
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-opus-5"
-    # Transcription provider:
-    #   auto   — use OpenAI when a key is set, otherwise run Whisper locally
-    #   openai — always the hosted API (needs OPENAI_API_KEY)
-    #   local  — always faster-whisper in-process (no key, no per-minute cost)
-    transcription_provider: str = "auto"
+    # Transcription runs on the hosted Whisper API only (`openai`, or `auto`
+    # which resolves to it). The in-process faster-whisper path was removed —
+    # it pulled ctranslate2/onnxruntime into every deploy build for a code
+    # path that never ran once OPENAI_API_KEY was set.
+    transcription_provider: str = "openai"
     openai_api_key: str | None = None
     whisper_model: str = "whisper-1"  # hosted API model
-    # Local model size: tiny | base | small | medium | large-v3.
-    # `small` is the accuracy/RAM sweet spot (~1.2 GB with int8).
-    local_whisper_model: str = "small"
-    local_whisper_compute_type: str = "int8"
     # Whisper rejects uploads over 25 MB; audio is compressed and split below this.
     whisper_max_upload_bytes: int = 24 * 1024 * 1024
     transcode_bitrate: str = "32k"  # mono 16 kHz speech — ~240 KB/min

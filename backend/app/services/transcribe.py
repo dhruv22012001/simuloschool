@@ -1,21 +1,15 @@
 """Video -> transcript.
 
-Two providers, chosen by TRANSCRIPTION_PROVIDER:
+One provider: the hosted Whisper API (~$0.006/min). It caps uploads at 25 MB,
+so long lessons are split into segments first.
 
-  local  — faster-whisper running in-process. No API key, no per-minute cost,
-           no upload size limit. Needs ~1.2 GB RAM for the `small` model.
-  openai — the hosted Whisper API. Fast and light on memory, but costs
-           ~$0.006/min and caps uploads at 25 MB, so audio is split first.
-  auto   — openai when a key is present, otherwise local.
-
-Either way the video is downloaded once and ffmpeg reduces it to mono 16 kHz
-audio before transcription; that is what both providers want.
+The video is downloaded once and ffmpeg reduces it to mono 16 kHz audio before
+transcription — the video itself never leaves our infrastructure.
 """
 
 import logging
 import subprocess
 import tempfile
-from functools import lru_cache
 from pathlib import Path
 
 from app.core.config import settings
@@ -93,39 +87,23 @@ def split_audio(audio_path: Path, out_dir: Path, segment_seconds: int) -> list[P
 
 
 def resolve_provider() -> str:
-    """Which provider a transcription would use right now."""
+    """Validate TRANSCRIPTION_PROVIDER; `auto` resolves to the hosted API.
+
+    `local` is rejected by name rather than as merely unknown, so a stale
+    setting from before the faster-whisper removal fails loudly instead of
+    looking like a typo.
+    """
     provider = settings.transcription_provider.lower()
     if provider == "auto":
-        return "openai" if settings.openai_api_key else "local"
-    if provider not in ("openai", "local"):
+        return "openai"
+    if provider == "local":
+        raise TranscriptionError(
+            "TRANSCRIPTION_PROVIDER=local is no longer supported — the "
+            "in-process faster-whisper path was removed. Use 'openai'."
+        )
+    if provider != "openai":
         raise TranscriptionError(f"unknown TRANSCRIPTION_PROVIDER: {provider}")
     return provider
-
-
-@lru_cache(maxsize=1)
-def _local_model():
-    """Load the local model once per process — loading costs seconds."""
-    try:
-        from faster_whisper import WhisperModel
-    except ImportError as err:  # pragma: no cover - dependency is declared
-        raise TranscriptionError(
-            "faster-whisper is not installed; set TRANSCRIPTION_PROVIDER=openai"
-        ) from err
-    logger.info(
-        "loading local whisper model",
-        extra={"ctx": {"model": settings.local_whisper_model}},
-    )
-    return WhisperModel(
-        settings.local_whisper_model,
-        device="cpu",
-        compute_type=settings.local_whisper_compute_type,
-    )
-
-
-def transcribe_local(audio_path: Path) -> str:
-    """Run Whisper in-process. No size limit — it streams the whole file."""
-    segments, _info = _local_model().transcribe(str(audio_path), vad_filter=True)
-    return " ".join(segment.text.strip() for segment in segments).strip()
 
 
 def transcribe_openai(audio_path: Path) -> str:
@@ -167,11 +145,7 @@ def transcribe_storage_key(storage_key: str) -> str:
         video_path = tmpdir / "source"
         get_s3_client().download_file(settings.s3_bucket, storage_key, str(video_path))
         audio_path = extract_audio(video_path, tmpdir / "audio.mp3")
-
-        if provider == "local":
-            text = transcribe_local(audio_path)
-        else:
-            text = transcribe_openai(audio_path)
+        text = transcribe_openai(audio_path)
 
     transcript = "\n".join(part.strip() for part in text.splitlines() if part.strip())
     if not transcript.strip():
