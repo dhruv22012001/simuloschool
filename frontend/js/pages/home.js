@@ -7,6 +7,7 @@
   const banner = document.getElementById("login-banner");
   const bannerName = document.getElementById("banner-name");
   const heroCta = document.getElementById("hero-cta");
+  const demoCta = document.getElementById("demo-cta");
 
   if (Api.hasToken()) {
     const name = localStorage.getItem("simuloschool_name") || "there";
@@ -55,5 +56,12 @@
 
     heroCta.textContent = "▶ Continue learning";
     heroCta.href = "lessons.html";
+
+    // Logged out this points at signup; logged in it went to login.html, which
+    // bounced the visitor through sign-in and straight back to where they were.
+    if (demoCta) {
+      demoCta.textContent = "▶ Continue learning";
+      demoCta.href = "lessons.html";
+    }
   }
 })();
