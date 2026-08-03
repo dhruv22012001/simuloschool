@@ -10,6 +10,8 @@ services:
     runtime: python
     rootDir: backend
     plan: free
+    domains:
+      - api.simuloschool.com
     buildCommand: pip install uv && uv sync --frozen --no-dev
     # Migrations run before boot (free tier has no preDeployCommand).
     startCommand: uv run --no-dev alembic upgrade head && uv run --no-dev uvicorn app.main:app --host 0.0.0.0 --port $PORT
@@ -33,8 +35,8 @@ services:
         sync: false
       - key: ADMIN_NAME
         value: Admin
-      - key: CORS_ALLOWED_ORIGINS # the Static Site URL, e.g. https://simuloschool-frontend.onrender.com
-        sync: false
+      - key: CORS_ALLOWED_ORIGINS # must list every origin the browser loads the site from
+        value: https://www.simuloschool.com,https://simuloschool.com
       # Generation runs in GitHub Actions, not here — these are set so an
       # operator can run the job manually against prod from a Render shell.
       - key: ANTHROPIC_API_KEY
@@ -59,6 +61,22 @@ services:
     # Generate js/config.js from the API_BASE_URL env var at build time.
     buildCommand: 'echo "window.API_BASE_URL = \"$API_BASE_URL\";" > js/config.js'
     staticPublishPath: .
+    domains:
+      - www.simuloschool.com
+      - simuloschool.com
+    routes:
+      # Single-page-ish static site: unknown paths fall back to the landing page
+      # rather than Render's 404.
+      - type: rewrite
+        source: /
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
     envVars:
-      - key: API_BASE_URL # the Web Service URL, e.g. https://simuloschool-api.onrender.com
-        sync: false
+      - key: API_BASE_URL
+        value: https://api.simuloschool.com

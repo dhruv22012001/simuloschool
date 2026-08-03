@@ -7,6 +7,10 @@ services:
       POSTGRES_DB: simuloschool
     ports:
       - "5432:5432"
+      # Second mapping: a natively-installed Postgres often already owns
+      # localhost:5432 and shadows this container for host-side tools.
+      # Tests connect here so they always reach the container.
+      - "55432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

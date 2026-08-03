@@ -21,6 +21,6 @@ def list_videos(
         db.scalars(
             select(Video)
             .where(Video.status == VideoStatus.published)
-            .order_by(Video.created_at.desc())
+            .order_by(Video.created_at.desc(), Video.id.desc())
         )
     )

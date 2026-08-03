@@ -125,7 +125,9 @@ def list_all_videos(
     _admin: User = Depends(require_admin), db: Session = Depends(get_db)
 ) -> list[VideoAdminOut]:
     """Every video in every state — the admin's pipeline view."""
-    videos = list(db.scalars(select(Video).order_by(Video.created_at.desc())))
+    # id breaks ties: created_at comes from now(), which is constant within a
+    # transaction, so timestamps alone don't give a stable order.
+    videos = list(db.scalars(select(Video).order_by(Video.created_at.desc(), Video.id.desc())))
     counts = _question_counts(db, [v.id for v in videos])
     return [_to_admin_out(v, counts.get(v.id, 0)) for v in videos]
 

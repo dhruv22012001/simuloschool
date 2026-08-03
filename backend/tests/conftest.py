@@ -16,7 +16,12 @@ os.environ.setdefault("JWT_SECRET", "test-secret-0123456789abcdef0123456789abcde
 os.environ.setdefault("ADMIN_EMAIL", "")
 os.environ.setdefault("ADMIN_PASSWORD", "")
 
-MAINTENANCE_URL = "postgresql+psycopg://simulo:simulo@localhost:5432/simuloschool"
+# Port 55432 is the compose stack's second mapping — a natively-installed
+# Postgres commonly owns 5432 and would shadow the container. Override with
+# TEST_DATABASE_URL if your setup differs.
+MAINTENANCE_URL = os.environ.get(
+    "TEST_DATABASE_URL", "postgresql+psycopg://simulo:simulo@localhost:55432/simuloschool"
+)
 TEST_DB = "simuloschool_test"
 os.environ["DATABASE_URL"] = MAINTENANCE_URL.rsplit("/", 1)[0] + "/" + TEST_DB
 
