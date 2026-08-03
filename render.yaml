@@ -84,5 +84,11 @@ services:
         name: X-Content-Type-Options
         value: nosniff
     envVars:
+      # Set in the dashboard, not pinned here: the site has to be testable
+      # against the API's onrender.com URL before api.simuloschool.com has DNS
+      # and a certificate. Pinning it meant the first deploy shipped a
+      # config.js pointing at a host that did not resolve — every request
+      # failed with "Failed to fetch" before it left the browser.
+      # Switch this to https://api.simuloschool.com once DNS is live.
       - key: API_BASE_URL
-        value: https://api.simuloschool.com
+        sync: false
