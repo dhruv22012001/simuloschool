@@ -22,8 +22,13 @@
         localStorage.setItem("simuloschool_role", user.role);
         navUser.textContent = "Hi, " + user.name;
         bannerName.textContent = user.name;
+        // Upload is admin-only — reveal it only once the server confirms the
+        // role. Students and logged-out visitors never see it.
         if (user.role === "admin") {
-          document.getElementById("banner-admin").hidden = false;
+          ["admin-link", "admin-nav-link", "banner-admin"].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.hidden = false;
+          });
         }
       })
       .catch(() => {

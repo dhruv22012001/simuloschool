@@ -8,9 +8,14 @@
   const name = localStorage.getItem("simuloschool_name");
   if (name) userNameEl.textContent = name;
 
-  // Keep the cached role fresh for other pages; the API is the source of truth.
+  // The API is the source of truth for role — Upload stays hidden unless it
+  // confirms this user is an admin.
   Api.request("/auth/me")
-    .then((user) => localStorage.setItem("simuloschool_role", user.role))
+    .then((user) => {
+      localStorage.setItem("simuloschool_role", user.role);
+      const uploadLink = document.getElementById("admin-link");
+      if (uploadLink && user.role === "admin") uploadLink.hidden = false;
+    })
     .catch(() => {});
 
   document.getElementById("logout").addEventListener("click", () => {
