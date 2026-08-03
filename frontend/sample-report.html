@@ -34,10 +34,14 @@
   .eyebrow{ font-family:'Baloo 2',sans-serif; font-size:13px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--marigold-deep); display:inline-flex; align-items:center; gap:8px; margin-bottom:16px; }
   .eyebrow::before{ content:""; width:22px; height:2px; background:var(--marigold-deep); display:inline-block; }
 
-  .page-head{ padding:64px 0 12px; max-width:720px; }
-  .page-head h1{ font-size:42px; margin-bottom:16px; }
+  /* Constrain the reading measure on the text itself, never on the container:
+     .page-head also carries .wrap (max-width:1180px; margin:0 auto), so a
+     max-width here shrank the block and re-centred it, pushing the heading's
+     left edge ~230px right of the report card below it. */
+  .page-head{ padding:64px 0 12px; }
+  .page-head h1{ font-size:42px; margin-bottom:16px; max-width:760px; }
   .page-head h1 em{ font-style:italic; color:var(--sage-deep); }
-  .page-head p{ font-size:17px; color:var(--ink-soft); }
+  .page-head p{ font-size:17px; color:var(--ink-soft); max-width:660px; }
 
   /* report-card signature */
   .report-card{ background:var(--card); border-radius:6px; position:relative; box-shadow:var(--shadow); border:1px solid var(--line); }
