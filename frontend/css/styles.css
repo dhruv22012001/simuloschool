@@ -701,3 +701,190 @@ input[type="file"] {
   color: var(--ink-soft);
   font-size: 14.5px;
 }
+
+/* ==========================================================================
+   Responsive pass — phones and small tablets.
+   Goals: nothing overflows horizontally, tap targets stay >= 44px, and
+   text/padding scale down instead of the layout squeezing.
+   ========================================================================== */
+
+html {
+  -webkit-text-size-adjust: 100%; /* stop iOS inflating text in landscape */
+}
+
+body {
+  overflow-x: hidden; /* belt-and-braces against a stray wide child */
+}
+
+/* Long values (storage keys, emails) must wrap rather than widen the page. */
+.video-meta,
+.pipeline-head h4,
+.review-q-text,
+.t-name {
+  overflow-wrap: anywhere;
+}
+
+/* Any table can exceed a phone's width — let it scroll inside its own box. */
+table {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 820px) {
+  .wrap {
+    padding: 0 20px;
+  }
+
+  nav {
+    padding: 14px 20px;
+    gap: 10px;
+  }
+
+  .page-head {
+    padding: 40px 0 26px;
+  }
+
+  .page-head h2 {
+    font-size: 28px;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Header: keep it one line by shrinking, not by overflowing. */
+  .topbar,
+  nav {
+    padding: 12px 16px;
+  }
+
+  .logo {
+    font-size: 18px;
+  }
+
+  .nav-right {
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  /* The signed-in name is the first thing to go — the avatar/button matter more. */
+  .nav-right #user-name {
+    display: none;
+  }
+
+  .nav-cta,
+  .nav-upload {
+    padding: 9px 14px;
+    font-size: 13px;
+  }
+
+  .wrap {
+    padding: 0 16px;
+  }
+
+  .page-head {
+    padding: 32px 0 20px;
+  }
+
+  .page-head h2 {
+    font-size: 24px;
+  }
+
+  .page-head p {
+    font-size: 14.5px;
+  }
+
+  /* Auth pages */
+  .auth-page {
+    padding: 20px 16px;
+  }
+
+  .auth-card {
+    padding: 28px 20px 24px;
+  }
+
+  .auth-card h1 {
+    font-size: 24px;
+  }
+
+  .auth-inner .logo {
+    font-size: 22px;
+    margin-bottom: 18px;
+  }
+
+  /* 16px inputs stop iOS Safari zooming in on focus. */
+  form input,
+  form textarea {
+    font-size: 16px;
+  }
+
+  .upload-card {
+    padding: 26px 18px 22px;
+  }
+
+  .upload-card h3 {
+    font-size: 19px;
+  }
+
+  /* Admin pipeline */
+  .pipeline-card {
+    padding: 18px 16px 16px;
+  }
+
+  .pipeline-head {
+    gap: 8px;
+  }
+
+  .pipeline-head h4 {
+    font-size: 16px;
+  }
+
+  .pipeline-actions {
+    gap: 8px;
+  }
+
+  /* Full-width, comfortably tappable buttons instead of a cramped row. */
+  .pipeline-actions .btn {
+    flex: 1 1 100%;
+    justify-content: center;
+    min-height: 44px;
+    padding: 11px 16px;
+  }
+
+  /* The right-aligned delete button reads as misplaced once buttons stack. */
+  .btn-danger {
+    margin-left: 0;
+  }
+
+  .review-options {
+    margin-left: 14px;
+  }
+
+  .empty-card {
+    padding: 30px 20px;
+  }
+
+  .video-grid {
+    gap: 12px;
+    padding-bottom: 56px;
+  }
+}
+
+@media (max-width: 380px) {
+  .nav-cta,
+  .nav-upload {
+    padding: 8px 11px;
+    font-size: 12.5px;
+  }
+
+  .logo {
+    font-size: 17px;
+  }
+
+  .page-head h2 {
+    font-size: 22px;
+  }
+}

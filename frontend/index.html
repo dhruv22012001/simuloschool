@@ -494,6 +494,91 @@
   .footer-tagline{ font-family:'Fraunces'; font-style:italic; font-size:19px; color:#EDF0FA; margin-top:12px; max-width:260px; }
   .footer-bottom{ border-top:1px solid rgba(255,255,255,0.1); padding-top:24px; display:flex; justify-content:space-between; font-size:12.5px; flex-wrap:wrap; gap:10px;}
   @media(max-width:900px){ .footer-grid{ grid-template-columns:1fr 1fr; } }
+
+  /* ==========================================================================
+     Responsive pass — phones. The page was built desktop-first with a 900px
+     and 560px breakpoint; these handle real phone widths (390/360/320).
+     ========================================================================== */
+  html{ -webkit-text-size-adjust:100%; }
+
+  @media(max-width:820px){
+    .wrap{ padding:0 20px; }
+    nav{ padding:14px 20px; }
+    .section-pad{ padding:64px 0; }
+    .section-head{ margin-bottom:38px; }
+    .section-head h2{ font-size:28px; }
+    .section-head p{ font-size:15px; }
+    .hero{ padding:56px 0 40px; }
+    .demo-grid{ gap:34px; }
+    .trust-bar .wrap{ gap:18px; font-size:12.5px; }
+  }
+
+  @media(max-width:600px){
+    .wrap{ padding:0 16px; }
+    nav{ padding:12px 16px; gap:8px; }
+    .logo{ font-size:18px; }
+
+    /* 5 nav items will not fit a phone: drop the label-only links, keep the
+       two that matter and shrink them. */
+    .nav-auth{ gap:8px; }
+    .nav-user{ display:none !important; }
+    .nav-cta{ padding:9px 14px; font-size:13px; }
+    .nav-login{ padding:9px 8px; font-size:13px; }
+    .nav-admin{ padding:9px 12px; font-size:12.5px; }
+    .nav-logout{ padding:8px 12px; font-size:12.5px; }
+
+    .login-banner{ padding:10px 16px; font-size:13px; gap:8px; }
+
+    .hero{ padding:36px 0 28px; }
+    .hero h1{ font-size:30px; }
+    .hero p.lead{ font-size:15.5px; margin-bottom:24px; }
+    .cta-row{ gap:10px; }
+    /* Full-width CTAs beat two half-buttons squeezed onto one line. */
+    .cta-row .btn{ flex:1 1 100%; justify-content:center; padding:14px 20px; font-size:14.5px; }
+
+    .hero-illustration{ grid-template-columns:1fr; padding:18px; min-height:0; }
+    .snapshot-widget{ width:100%; max-width:280px; }
+
+    .section-pad{ padding:48px 0; }
+    .section-head{ margin-bottom:30px; }
+    .section-head h2{ font-size:24px; }
+
+    /* The step cards were a fixed 260px — that overflows narrow phones. */
+    .flow-step{ width:100%; padding:24px 18px; }
+    .flow-arrow{ padding:6px 0; transform:rotate(90deg); }
+
+    .feature-card{ padding:20px 16px; }
+    .demo-copy h2{ font-size:24px; }
+    .demo-list li{ font-size:13.5px; }
+    .player-caption{ font-size:11px; padding:8px 10px; gap:8px; }
+
+    .dashboard-mock{ padding:18px; }
+    .why-col{ padding:22px 18px; }
+    .sci-card{ padding:20px 16px; }
+    .sample-card{ padding:28px 20px 24px; }
+    .testi-card{ padding:22px 16px 18px; }
+
+    .price-card{ padding:24px 18px; }
+    .price-card.featured{ transform:none; }
+
+    .faq-q{ font-size:15px; gap:12px; }
+
+    .final-cta{ padding:64px 0; }
+    .final-cta h2{ font-size:26px; }
+    .final-cta .cta-row .btn{ flex:1 1 100%; }
+
+    footer{ padding:44px 0 24px; }
+    .footer-grid{ grid-template-columns:1fr 1fr; gap:22px; }
+    .footer-bottom{ flex-direction:column; gap:6px; text-align:center; }
+  }
+
+  @media(max-width:380px){
+    .hero h1{ font-size:26px; }
+    .section-head h2{ font-size:22px; }
+    .nav-cta{ padding:8px 11px; font-size:12.5px; }
+    .nav-login{ padding:8px 6px; font-size:12.5px; }
+    .footer-grid{ grid-template-columns:1fr; }
+  }
 </style>
 </head>
 <body>
@@ -1053,7 +1138,7 @@
 </footer>
 
 <script src="js/config.js"></script>
-<script src="js/api.js?v=10"></script>
-<script src="js/pages/home.js?v=10"></script>
+<script src="js/api.js?v=11"></script>
+<script src="js/pages/home.js?v=11"></script>
 </body>
 </html>

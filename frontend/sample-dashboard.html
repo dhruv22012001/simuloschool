@@ -114,6 +114,49 @@
   .btn-primary{ background:var(--sage); color:#fff; box-shadow:0 14px 30px -12px rgba(76,154,117,.55); }
   .btn-ghost{ background:var(--card); color:var(--ink); border:1px solid var(--line); }
   .disclaimer{ font-size:12px; color:var(--ink-soft); opacity:.75; text-align:center; padding-bottom:36px; }
+
+  /* ---------- responsive: phones ---------- */
+  html{ -webkit-text-size-adjust:100%; }
+  @media(max-width:820px){
+    .wrap{ padding:0 20px; }
+    nav{ padding:14px 20px; }
+    .page-head{ padding:40px 0 22px; }
+    .page-head h1{ font-size:30px; }
+    .page-head p{ font-size:15.5px; }
+    .whatsapp-strip{ padding:44px 0; }
+    .whatsapp-strip h2{ font-size:24px; }
+  }
+  @media(max-width:600px){
+    .wrap{ padding:0 16px; }
+    nav{ padding:12px 16px; }
+    .logo{ font-size:18px; }
+    .nav-cta{ padding:9px 14px; font-size:13px; }
+    .page-head h1{ font-size:26px; }
+
+    /* Range control gets its own line and fills it, so both options stay
+       comfortably tappable. */
+    .controls{ gap:12px; }
+    .seg{ width:100%; }
+    .seg button{ flex:1; padding:9px 10px; }
+
+    .card{ padding:16px; }
+    .tile .num{ font-size:30px; }
+    .grid2{ gap:12px; }
+    .tiles{ gap:12px; }
+    .legend{ gap:10px; }
+    .legend span{ font-size:12px; }
+    .topic{ gap:9px; }
+    .t-name{ font-size:13.5px; }
+    .wa-line{ font-size:12.5px; padding:14px 15px; }
+    .footer-cta{ padding:48px 0; }
+    .footer-cta h2{ font-size:24px; }
+    .footer-cta .btn{ width:100%; justify-content:center; margin-bottom:10px; }
+
+    /* Tooltips follow the cursor; on touch they can run off-screen. */
+    .tip{ max-width:70vw; white-space:normal; }
+  }
+  /* A wide data table must scroll inside its card, not widen the page. */
+  table{ display:block; overflow-x:auto; white-space:nowrap; }
 </style>
 </head>
 <body>
