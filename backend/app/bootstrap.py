@@ -14,6 +14,7 @@ from app.core.db import SessionLocal
 from app.core.logging import bind
 from app.models.base import Role
 from app.models.user import User
+from app.routers.auth import normalize_email
 
 logger = logging.getLogger(__name__)
 
@@ -22,15 +23,18 @@ def seed_admin() -> None:
     if not settings.admin_email or not settings.admin_password:
         logger.info("admin bootstrap skipped: ADMIN_EMAIL/ADMIN_PASSWORD not set")
         return
+    # Login normalizes the address, so the seeded row must match that form or
+    # a capitalised ADMIN_EMAIL would create an account nobody can sign in to.
+    admin_email = normalize_email(settings.admin_email)
     try:
         with SessionLocal() as db:
-            existing = db.scalar(select(User).where(User.email == settings.admin_email))
+            existing = db.scalar(select(User).where(User.email == admin_email))
             if existing is not None:
                 bind(logger, user_id=existing.id).info("admin bootstrap: user already exists")
                 return
             user = User(
                 name=settings.admin_name,
-                email=settings.admin_email,
+                email=admin_email,
                 password_hash=hash_password(settings.admin_password),
                 role=Role.admin,
             )
