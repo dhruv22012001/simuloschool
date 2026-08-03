@@ -289,6 +289,32 @@ form .btn {
   margin-top: 16px;
 }
 
+.hint {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 5px;
+}
+
+.auth-alt {
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.auth-alt a {
+  color: var(--sage-deep);
+  font-weight: 600;
+}
+
+.auth-inner .logo {
+  justify-content: center;
+  font-size: 26px;
+  margin-bottom: 24px;
+}
+
 /* ---------- lessons page ---------- */
 .wrap {
   max-width: 1180px;
