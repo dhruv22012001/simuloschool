@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sample parent dashboard — Saarthi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,450;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#182849; --ink-soft:#4A5578; --ink-muted:#7A85A3;
+    --paper:#EFF1EA; --paper-deep:#E4E7DD; --card:#FFFFFF; --line:#D9DCCF;
+    --marigold:#F2A93B; --marigold-deep:#D98F1E;
+    --coral:#E8674B; --sage:#4C9A75; --sage-deep:#357753;
+    --shadow: 0 20px 50px -20px rgba(24,40,73,0.25);
+
+    /* Tier scale is ORDINAL, so it's one hue stepped light->dark, not three
+       categorical hues (amber vs coral fail the normal-vision separation
+       floor). Lightness 0.838 / 0.534 / 0.346 — monotonic and evenly spaced.
+       Steps chosen so an in-bar 12px bold label clears 4.5:1: ink on tier-1
+       9.11:1, white on tier-2 4.98:1, white on tier-3 11.17:1. Adjacent
+       segments are separated by a 2px surface gap plus a direct count label. */
+    --tier-1:#A7D7BE;   /* easy   */
+    --tier-2:#3A7C5D;   /* medium */
+    --tier-3:#17432F;   /* hard   */
+    --grid:#E8EAE2;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ font-family:'Inter',sans-serif; background:var(--paper); color:var(--ink); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,h4{ font-family:'Fraunces',serif; font-weight:600; line-height:1.1; letter-spacing:-0.01em; }
+  a{ text-decoration:none; color:inherit; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 32px; }
+
+  header{ position:sticky; top:0; z-index:100; background:rgba(239,241,234,0.92); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+  nav{ display:flex; align-items:center; justify-content:space-between; padding:18px 32px; max-width:1180px; margin:0 auto; }
+  .logo{ font-family:'Fraunces',serif; font-weight:700; font-size:22px; }
+  .logo span{ color:var(--marigold-deep); }
+  .nav-cta{ background:var(--ink); color:var(--paper); padding:10px 20px; border-radius:30px; font-size:14px; font-weight:600; }
+
+  .eyebrow{ font-family:'Baloo 2',sans-serif; font-size:13px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--marigold-deep); display:inline-flex; align-items:center; gap:8px; margin-bottom:14px; }
+  .eyebrow::before{ content:""; width:22px; height:2px; background:var(--marigold-deep); display:inline-block; }
+
+  .page-head{ padding:56px 0 28px; }
+  .page-head h1{ font-size:40px; margin-bottom:14px; max-width:760px; }
+  .page-head h1 em{ font-style:italic; color:var(--sage-deep); }
+  .page-head p{ font-size:16.5px; color:var(--ink-soft); max-width:660px; }
+
+  /* ---------- filter row: one row, above the charts ---------- */
+  .controls{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:6px 0 24px; }
+  .who{ display:flex; align-items:center; gap:11px; }
+  .avatar{ width:40px; height:40px; border-radius:50%; background:var(--marigold); color:var(--ink); display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:700; }
+  .who-name{ font-weight:700; font-size:15px; }
+  .who-meta{ font-size:12.5px; color:var(--ink-soft); }
+  .seg{ display:inline-flex; background:var(--paper-deep); border:1px solid var(--line); border-radius:30px; padding:3px; }
+  .seg button{ border:none; background:transparent; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:var(--ink-soft); padding:7px 16px; border-radius:30px; cursor:pointer; }
+  .seg button[aria-pressed="true"]{ background:var(--card); color:var(--ink); box-shadow:0 1px 3px rgba(24,40,73,.12); }
+
+  /* ---------- cards ---------- */
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px; }
+  .card h3{ font-size:17px; margin-bottom:3px; }
+  .card .sub{ font-size:12.5px; color:var(--ink-soft); margin-bottom:18px; }
+
+  .tiles{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:16px; }
+  @media(max-width:900px){ .tiles{ grid-template-columns:repeat(2,1fr); } }
+  @media(max-width:520px){ .tiles{ grid-template-columns:1fr; } }
+  .tile .label{ font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); font-weight:600; }
+  .tile .num{ font-family:'Fraunces',serif; font-size:36px; font-weight:700; margin-top:4px; }
+  .tile .num.good{ color:var(--sage-deep); }
+  .tile .delta{ font-size:12.5px; font-weight:600; margin-top:2px; }
+  .delta.up{ color:var(--sage-deep); } .delta.flat{ color:var(--ink-soft); }
+
+  .grid2{ display:grid; grid-template-columns:1.35fr 0.65fr; gap:16px; margin-bottom:16px; }
+  @media(max-width:900px){ .grid2{ grid-template-columns:1fr; } }
+
+  svg{ display:block; width:100%; height:auto; overflow:visible; }
+  .grid-line{ stroke:var(--grid); stroke-width:1; }
+  .axis-text{ font-family:'Inter',sans-serif; font-size:11px; fill:var(--ink-muted); }
+  .val-text{ font-family:'Inter',sans-serif; font-size:11px; font-weight:600; fill:var(--ink-soft); }
+
+  /* legend — always present for >= 2 series, identity never by color alone */
+  .legend{ display:flex; gap:16px; flex-wrap:wrap; margin-top:14px; }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft); }
+  .swatch{ width:11px; height:11px; border-radius:3px; display:inline-block; }
+
+  /* tooltip */
+  .tip{ position:fixed; pointer-events:none; background:var(--ink); color:#fff; font-size:12px; padding:8px 10px; border-radius:8px; opacity:0; transition:opacity .1s; z-index:50; white-space:nowrap; box-shadow:0 8px 20px -8px rgba(0,0,0,.5); }
+  .tip b{ color:var(--marigold); }
+
+  /* weak topics — status colour ships with an icon AND a label */
+  .topic{ display:flex; gap:11px; align-items:flex-start; padding:12px 0; border-bottom:1px dashed var(--line); }
+  .topic:last-child{ border-bottom:none; }
+  .topic .icon{ font-size:15px; line-height:1.4; }
+  .topic .t-name{ font-size:14px; font-weight:600; }
+  .topic .t-meta{ font-size:12.5px; color:var(--ink-soft); }
+  .flag{ font-family:'Baloo 2',sans-serif; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; text-transform:uppercase; letter-spacing:.03em; }
+  .flag-watch{ background:rgba(232,103,75,.12); color:var(--coral); }
+  .flag-improving{ background:rgba(76,154,117,.14); color:var(--sage-deep); }
+
+  /* table view (accessibility relief for the low-contrast lightest step) */
+  .table-toggle{ background:transparent; border:1px solid var(--line); border-radius:20px; padding:6px 14px; font-size:12.5px; font-weight:600; color:var(--ink-soft); cursor:pointer; font-family:'Inter',sans-serif; margin-top:16px; }
+  table{ border-collapse:collapse; width:100%; margin-top:14px; font-size:13px; }
+  th,td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); }
+  th{ font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); }
+  td.num{ text-align:right; font-variant-numeric:tabular-nums; }
+
+  .whatsapp-strip{ background:var(--ink); color:#DCE3F5; padding:56px 0; margin-top:44px; }
+  .whatsapp-strip h2{ color:#fff; font-size:28px; margin-bottom:10px; }
+  .whatsapp-strip p{ color:#B9C2DE; font-size:15px; max-width:620px; margin-bottom:22px; }
+  .wa-line{ background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); border-left:3px solid #25D366; border-radius:12px; padding:16px 18px; font-size:13.5px; color:#EAEFFB; white-space:pre-line; max-width:560px; }
+
+  .footer-cta{ text-align:center; padding:64px 0; }
+  .footer-cta h2{ font-size:30px; margin-bottom:20px; }
+  .btn{ display:inline-flex; align-items:center; gap:8px; padding:14px 26px; border-radius:32px; font-weight:600; font-size:15px; border:none; cursor:pointer; }
+  .btn-primary{ background:var(--sage); color:#fff; box-shadow:0 14px 30px -12px rgba(76,154,117,.55); }
+  .btn-ghost{ background:var(--card); color:var(--ink); border:1px solid var(--line); }
+  .disclaimer{ font-size:12px; color:var(--ink-soft); opacity:.75; text-align:center; padding-bottom:36px; }
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a class="logo" href="index.html">Saarthi <span>•</span></a>
+    <a href="login.html" class="nav-cta">Login</a>
+  </nav>
+</header>
+
+<div class="wrap page-head">
+  <span class="eyebrow">Sample dashboard</span>
+  <h1>What you'll see as the weeks <em>add up.</em></h1>
+  <p>
+    One lesson gives you a report. A term's worth gives you the shape of your
+    child's learning — which subjects are climbing, which topic keeps tripping
+    them, and whether they're reaching the harder questions or stopping early.
+  </p>
+</div>
+
+<div class="wrap">
+
+  <div class="controls">
+    <div class="who">
+      <div class="avatar">A</div>
+      <div>
+        <div class="who-name">Aarav Sharma</div>
+        <div class="who-meta">Grade 4 · joined 12 June</div>
+      </div>
+    </div>
+    <div class="seg" role="group" aria-label="Time range">
+      <button data-range="7" aria-pressed="false">Last 7 days</button>
+      <button data-range="30" aria-pressed="true">Last 30 days</button>
+    </div>
+  </div>
+
+  <!-- ---------- headline numbers: stat tiles, not charts ---------- -->
+  <div class="tiles">
+    <div class="card tile">
+      <div class="label">Understanding</div>
+      <div class="num good" id="t-understanding">78%</div>
+      <div class="delta up" id="t-understanding-d">▲ 9 pts vs previous</div>
+    </div>
+    <div class="card tile">
+      <div class="label">Lessons completed</div>
+      <div class="num" id="t-lessons">12</div>
+      <div class="delta flat" id="t-lessons-d">3 per week</div>
+    </div>
+    <div class="card tile">
+      <div class="label">Reached hard tier</div>
+      <div class="num" id="t-hard">7<span style="font-size:17px; color:var(--ink-soft);">/12</span></div>
+      <div class="delta up" id="t-hard-d">▲ up from 3 of 12</div>
+    </div>
+    <div class="card tile">
+      <div class="label">Current streak</div>
+      <div class="num">5<span style="font-size:17px; color:var(--ink-soft);"> days</span></div>
+      <div class="delta flat">best so far: 9 days</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <!-- ---------- change over time: one series, so no legend box ---------- -->
+    <div class="card">
+      <h3>Understanding over time</h3>
+      <p class="sub">Share of questions answered correctly, per lesson. Hover any point.</p>
+      <svg id="trend" viewBox="0 0 640 240" role="img" aria-label="Line chart of understanding percentage per lesson, trending upward from 58% to 86%."></svg>
+      <button class="table-toggle" data-table="trend-table">Show data table</button>
+      <div id="trend-table" hidden></div>
+    </div>
+
+    <!-- ---------- magnitude across categories: single hue ---------- -->
+    <div class="card">
+      <h3>By subject</h3>
+      <p class="sub">Average understanding this period.</p>
+      <svg id="subjects" viewBox="0 0 320 240" role="img" aria-label="Bar chart of average understanding by subject: English 88%, Math 78%, Science 69%."></svg>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <!-- ---------- ordinal tier reach: sequential ramp + direct labels ---------- -->
+    <div class="card">
+      <h3>How far he gets in each quiz</h3>
+      <p class="sub">
+        Every quiz starts at easy. Reaching a harder tier means he proved he
+        understood the one before it.
+      </p>
+      <svg id="tiers" viewBox="0 0 640 150" role="img" aria-label="Stacked bars showing how many lessons ended at each tier, comparing this period with the previous one."></svg>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--tier-1)"></i> Stopped at easy</span>
+        <span><i class="swatch" style="background:var(--tier-2)"></i> Reached medium</span>
+        <span><i class="swatch" style="background:var(--tier-3)"></i> Reached hard</span>
+      </div>
+      <button class="table-toggle" data-table="tiers-table">Show data table</button>
+      <div id="tiers-table" hidden></div>
+    </div>
+
+    <div class="card">
+      <h3>Topics to keep an eye on</h3>
+      <p class="sub">Ranked by how often he missed them.</p>
+      <div id="topics"></div>
+    </div>
+  </div>
+</div>
+
+<section class="whatsapp-strip">
+  <div class="wrap">
+    <h2>You don't have to open this dashboard</h2>
+    <p>
+      It's here whenever you want the detail. But the part that matters comes to
+      you every Sunday evening on WhatsApp, in four lines.
+    </p>
+    <div class="wa-line">📊 <b>Aarav — week of 3 Aug</b>
+12 lessons · understanding 78% (▲9)
+Reached the hard tier in 7 of 12 — up from 3.
+📚 Still slipping on: unlike denominators
+🎯 A revision game is queued for Monday.</div>
+  </div>
+</section>
+
+<div class="wrap footer-cta">
+  <h2>See it with your own child's lessons</h2>
+  <a href="login.html" class="btn btn-primary">🟢 Start Free Trial</a>
+  <a href="sample-report.html" class="btn btn-ghost">📄 See a single lesson report</a>
+  <a href="index.html" class="btn btn-ghost">Back to home</a>
+</div>
+
+<p class="disclaimer">
+  Sample dashboard with illustrative data. "Aarav" is not a real student — the
+  metrics, tiers and thresholds match the real product.
+</p>
+
+<div class="tip" id="tip"></div>
+
+<script>
+(function(){
+  const tip = document.getElementById('tip');
+  const showTip = (evt, html) => {
+    tip.innerHTML = html;
+    tip.style.opacity = 1;
+    tip.style.left = Math.min(evt.clientX + 14, window.innerWidth - tip.offsetWidth - 12) + 'px';
+    tip.style.top  = (evt.clientY - 12) + 'px';
+  };
+  const hideTip = () => { tip.style.opacity = 0; };
+
+  const DATA = {
+    30: {
+      trend: [
+        {d:'8 Jul', v:58, lesson:'Place value'},      {d:'11 Jul', v:63, lesson:'Rounding'},
+        {d:'14 Jul', v:61, lesson:'Leaf & food'},     {d:'17 Jul', v:70, lesson:'Punctuation'},
+        {d:'20 Jul', v:68, lesson:'Multiplying'},     {d:'24 Jul', v:74, lesson:'Water cycle'},
+        {d:'27 Jul', v:72, lesson:'Adjectives'},      {d:'30 Jul', v:79, lesson:'Fractions I'},
+        {d:'1 Aug',  v:77, lesson:'Habitats'},        {d:'3 Aug',  v:83, lesson:'Fractions II'},
+        {d:'5 Aug',  v:81, lesson:'Story order'},     {d:'7 Aug',  v:86, lesson:'Decimals'}
+      ],
+      subjects: [ {n:'English', v:88}, {n:'Math', v:78}, {n:'Science', v:69} ],
+      tiers: [ {label:'This period', easy:2, medium:3, hard:7},
+               {label:'Previous',    easy:5, medium:4, hard:3} ],
+      tiles: { understanding:'78%', ud:'▲ 9 pts vs previous', lessons:'12', ld:'3 per week',
+               hard:'7', hd:'▲ up from 3 of 12' }
+    },
+    7: {
+      trend: [
+        {d:'1 Aug', v:77, lesson:'Habitats'},   {d:'3 Aug', v:83, lesson:'Fractions II'},
+        {d:'5 Aug', v:81, lesson:'Story order'},{d:'7 Aug', v:86, lesson:'Decimals'}
+      ],
+      subjects: [ {n:'English', v:91}, {n:'Math', v:84}, {n:'Science', v:77} ],
+      tiers: [ {label:'This week', easy:0, medium:1, hard:3},
+               {label:'Week before', easy:1, medium:2, hard:2} ],
+      tiles: { understanding:'82%', ud:'▲ 4 pts vs previous', lessons:'4', ld:'4 this week',
+               hard:'3', hd:'▲ up from 2 of 5' }
+    }
+  };
+
+  const TOPICS = [
+    {icon:'📕', name:'Comparing unlike denominators', meta:'missed in 4 of 6 fraction questions', flag:'watch', flagText:'Watch'},
+    {icon:'📙', name:'Rounding to the nearest hundred', meta:'missed in 2 of 5 questions', flag:'watch', flagText:'Watch'},
+    {icon:'📗', name:'Photosynthesis — what goes in', meta:'was weak in July, now 5 of 6 correct', flag:'improving', flagText:'Improving'}
+  ];
+
+  // ---------------------------------------------------------------- line ----
+  function drawTrend(rows){
+    const svg = document.getElementById('trend');
+    const W=640,H=240, L=42,R=14,T=16,B=34;
+    const iw=W-L-R, ih=H-T-B;
+    const lo=40, hi=100;
+    const x = i => L + (rows.length===1 ? iw/2 : (i*iw)/(rows.length-1));
+    const y = v => T + ih - ((v-lo)/(hi-lo))*ih;
+
+    let s='';
+    // recessive gridlines + axis labels
+    [40,55,70,85,100].forEach(v=>{
+      s += `<line class="grid-line" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/>`;
+      s += `<text class="axis-text" x="${L-9}" y="${y(v)+4}" text-anchor="end">${v}%</text>`;
+    });
+
+    const line = rows.map((r,i)=>`${i?'L':'M'}${x(i)},${y(r.v)}`).join(' ');
+    const area = `${line} L${x(rows.length-1)},${T+ih} L${x(0)},${T+ih} Z`;
+    s += `<path d="${area}" fill="var(--tier-2)" opacity="0.10"/>`;
+    s += `<path d="${line}" fill="none" stroke="var(--tier-3)" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"/>`;
+
+    rows.forEach((r,i)=>{
+      const first = i===0, last = i===rows.length-1;
+      // 2px surface ring so overlapping marks stay separable
+      s += `<circle cx="${x(i)}" cy="${y(r.v)}" r="${last?6:4.5}"
+                fill="var(--tier-3)" stroke="var(--card)" stroke-width="2"/>`;
+      // selective direct labels: endpoints only, never every point
+      if(first||last)
+        s += `<text class="val-text" x="${x(i)}" y="${y(r.v)-14}" text-anchor="middle">${r.v}%</text>`;
+      if(first||last||i===Math.floor(rows.length/2))
+        s += `<text class="axis-text" x="${x(i)}" y="${H-12}" text-anchor="middle">${r.d}</text>`;
+      // hit target larger than the mark
+      s += `<circle cx="${x(i)}" cy="${y(r.v)}" r="18" fill="transparent"
+                data-i="${i}" class="hit" style="cursor:crosshair"/>`;
+    });
+    svg.innerHTML = s;
+
+    svg.querySelectorAll('.hit').forEach(node=>{
+      node.addEventListener('mousemove', e=>{
+        const r = rows[+node.dataset.i];
+        showTip(e, `<b>${r.v}%</b> understanding<br>${r.lesson} · ${r.d}`);
+      });
+      node.addEventListener('mouseleave', hideTip);
+    });
+
+    buildTable('trend-table',
+      ['Date','Lesson','Understanding'],
+      rows.map(r=>[r.d, r.lesson, r.v+'%']));
+  }
+
+  // ------------------------------------------------------ subject bars ----
+  function drawSubjects(rows){
+    const svg = document.getElementById('subjects');
+    const W=320,H=240, L=66,R=42,T=14;
+    const iw=W-L-R, gap=20, bh=34;
+    let s='';
+    rows.forEach((r,i)=>{
+      const yy = T + i*(bh+gap);
+      const w = Math.max(4, (r.v/100)*iw);
+      s += `<rect x="${L}" y="${yy}" width="${iw}" height="${bh}" rx="4" fill="var(--paper-deep)"/>`;
+      // single hue — one measure across categories is not categorical data
+      s += `<rect x="${L}" y="${yy}" width="${w}" height="${bh}" rx="4" fill="var(--tier-2)"
+                data-n="${r.n}" data-v="${r.v}" class="bar" style="cursor:pointer"/>`;
+      s += `<text class="axis-text" x="${L-10}" y="${yy+bh/2+4}" text-anchor="end">${r.n}</text>`;
+      s += `<text class="val-text" x="${L+iw+8}" y="${yy+bh/2+4}">${r.v}%</text>`;
+    });
+    svg.innerHTML = s;
+    svg.querySelectorAll('.bar').forEach(node=>{
+      node.addEventListener('mousemove', e =>
+        showTip(e, `<b>${node.dataset.v}%</b> average<br>${node.dataset.n}`));
+      node.addEventListener('mouseleave', hideTip);
+    });
+  }
+
+  // -------------------------------------------------------- tier stacks ----
+  function drawTiers(rows){
+    const svg = document.getElementById('tiers');
+    const W=640,H=150, L=96,R=16,T=18, bh=38, gap=26;
+    const iw=W-L-R;
+    const total = rows.reduce((m,r)=>Math.max(m, r.easy+r.medium+r.hard), 1);
+    const steps = [
+      {k:'easy',   c:'var(--tier-1)', label:'easy'},
+      {k:'medium', c:'var(--tier-2)', label:'medium'},
+      {k:'hard',   c:'var(--tier-3)', label:'hard'}
+    ];
+    let s='';
+    rows.forEach((r,i)=>{
+      const yy = T + i*(bh+gap);
+      let cx = L;
+      s += `<text class="axis-text" x="${L-10}" y="${yy+bh/2+4}" text-anchor="end">${r.label}</text>`;
+      steps.forEach(st=>{
+        const n = r[st.k];
+        if(!n) return;
+        const w = (n/total)*iw;
+        // 2px surface gap between adjacent segments
+        s += `<rect x="${cx}" y="${yy}" width="${Math.max(w-2,2)}" height="${bh}" rx="4"
+                  fill="${st.c}" class="seg-bar" data-n="${n}" data-t="${st.label}"
+                  data-p="${r.label}" style="cursor:pointer"/>`;
+        // direct label inside — required relief for the light step's contrast
+        if(w>34)
+          s += `<text x="${cx+(w-2)/2}" y="${yy+bh/2+4}" text-anchor="middle"
+                    style="font-size:12px; font-weight:700; fill:${st.k==='easy'?'var(--ink)':'#fff'};
+                    font-family:Inter,sans-serif">${n}</text>`;
+        cx += w;
+      });
+    });
+    svg.innerHTML = s;
+    svg.querySelectorAll('.seg-bar').forEach(node=>{
+      node.addEventListener('mousemove', e =>
+        showTip(e, `<b>${node.dataset.n} lesson${node.dataset.n==='1'?'':'s'}</b> reached ${node.dataset.t}<br>${node.dataset.p}`));
+      node.addEventListener('mouseleave', hideTip);
+    });
+
+    buildTable('tiers-table',
+      ['Period','Stopped at easy','Reached medium','Reached hard'],
+      rows.map(r=>[r.label, r.easy, r.medium, r.hard]));
+  }
+
+  function buildTable(id, head, body){
+    const host = document.getElementById(id);
+    if(!host) return;
+    host.innerHTML =
+      '<table><thead><tr>' + head.map((h,i)=>`<th${i?' class="num"':''}>${h}</th>`).join('') +
+      '</tr></thead><tbody>' +
+      body.map(r=>'<tr>' + r.map((c,i)=>`<td${i?' class="num"':''}>${c}</td>`).join('') + '</tr>').join('') +
+      '</tbody></table>';
+  }
+
+  function drawTopics(){
+    document.getElementById('topics').innerHTML = TOPICS.map(t=>`
+      <div class="topic">
+        <span class="icon">${t.icon}</span>
+        <div style="flex:1">
+          <div class="t-name">${t.name}</div>
+          <div class="t-meta">${t.meta}</div>
+        </div>
+        <span class="flag flag-${t.flag}">${t.flagText}</span>
+      </div>`).join('');
+  }
+
+  function render(range){
+    const d = DATA[range];
+    drawTrend(d.trend);
+    drawSubjects(d.subjects);
+    drawTiers(d.tiers);
+    document.getElementById('t-understanding').textContent = d.tiles.understanding;
+    document.getElementById('t-understanding-d').textContent = d.tiles.ud;
+    document.getElementById('t-lessons').textContent = d.tiles.lessons;
+    document.getElementById('t-lessons-d').textContent = d.tiles.ld;
+    document.getElementById('t-hard').innerHTML =
+      d.tiles.hard + `<span style="font-size:17px; color:var(--ink-soft);">/${d.tiles.lessons}</span>`;
+    document.getElementById('t-hard-d').textContent = d.tiles.hd;
+  }
+
+  document.querySelectorAll('.seg button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      document.querySelectorAll('.seg button').forEach(o=>o.setAttribute('aria-pressed','false'));
+      b.setAttribute('aria-pressed','true');
+      render(b.dataset.range);
+    });
+  });
+
+  document.querySelectorAll('.table-toggle').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const host = document.getElementById(b.dataset.table);
+      host.hidden = !host.hidden;
+      b.textContent = host.hidden ? 'Show data table' : 'Hide data table';
+    });
+  });
+
+  drawTopics();
+  render('30');
+})();
+</script>
+</body>
+</html>

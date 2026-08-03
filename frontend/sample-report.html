@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sample parent report — Saarthi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,450;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#182849; --ink-soft:#4A5578;
+    --paper:#EFF1EA; --paper-deep:#E4E7DD; --card:#FFFFFF; --line:#D9DCCF;
+    --marigold:#F2A93B; --marigold-deep:#D98F1E;
+    --coral:#E8674B; --sage:#4C9A75; --sage-deep:#357753;
+    --shadow: 0 20px 50px -20px rgba(24,40,73,0.25);
+    --wa-green:#075E54; --wa-bg:#ECE5DD;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ font-family:'Inter',sans-serif; background:var(--paper); color:var(--ink); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,h4{ font-family:'Fraunces',serif; font-weight:600; line-height:1.1; letter-spacing:-0.01em; }
+  a{ text-decoration:none; color:inherit; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 32px; }
+
+  header{ position:sticky; top:0; z-index:100; background:rgba(239,241,234,0.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+  nav{ display:flex; align-items:center; justify-content:space-between; padding:18px 32px; max-width:1180px; margin:0 auto; }
+  .logo{ font-family:'Fraunces',serif; font-weight:700; font-size:22px; }
+  .logo span{ color:var(--marigold-deep); }
+  .nav-cta{ background:var(--ink); color:var(--paper); padding:10px 20px; border-radius:30px; font-size:14px; font-weight:600; }
+
+  .eyebrow{ font-family:'Baloo 2',sans-serif; font-size:13px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--marigold-deep); display:inline-flex; align-items:center; gap:8px; margin-bottom:16px; }
+  .eyebrow::before{ content:""; width:22px; height:2px; background:var(--marigold-deep); display:inline-block; }
+
+  .page-head{ padding:64px 0 12px; max-width:720px; }
+  .page-head h1{ font-size:42px; margin-bottom:16px; }
+  .page-head h1 em{ font-style:italic; color:var(--sage-deep); }
+  .page-head p{ font-size:17px; color:var(--ink-soft); }
+
+  /* report-card signature */
+  .report-card{ background:var(--card); border-radius:6px; position:relative; box-shadow:var(--shadow); border:1px solid var(--line); }
+  .report-card::before{ content:""; position:absolute; top:-1px; left:24px; right:24px; height:10px; background-image:radial-gradient(circle, var(--paper) 3.5px, transparent 3.6px); background-size:18px 10px; background-repeat:repeat-x; background-position:top center; }
+  .stamp-tab{ position:absolute; top:-14px; right:28px; background:var(--marigold); color:var(--ink); font-family:'Baloo 2',sans-serif; font-weight:700; font-size:12px; padding:6px 14px; border-radius:20px; transform:rotate(4deg); box-shadow:0 6px 14px -6px rgba(217,143,30,0.6); }
+
+  .split{ display:grid; grid-template-columns: 1.25fr 0.75fr; gap:48px; align-items:start; padding:44px 0 90px; }
+  @media(max-width:940px){ .split{ grid-template-columns:1fr; } }
+
+  /* ---------- the report ---------- */
+  .report{ padding:34px 32px 30px; }
+  .kid-line{ display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+  .kid-name{ font-family:'Fraunces',serif; font-size:26px; font-weight:700; }
+  .kid-meta{ font-size:13px; color:var(--ink-soft); margin-top:2px; }
+  .headline{ background:rgba(76,154,117,0.09); border:1px solid rgba(76,154,117,0.28); border-radius:12px; padding:16px 18px; margin:22px 0 26px; font-size:15px; }
+  .headline b{ color:var(--sage-deep); }
+
+  .section-label{ font-family:'Baloo 2',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:12px; }
+
+  /* tier ladder — mirrors the real promotion rules */
+  .ladder{ list-style:none; margin-bottom:28px; }
+  .rung{ display:grid; grid-template-columns:88px 1fr 84px; gap:14px; align-items:center; padding:13px 0; border-bottom:1px dashed var(--line); }
+  .rung:last-child{ border-bottom:none; }
+  .tier{ font-family:'Baloo 2',sans-serif; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:4px 10px; border-radius:20px; text-align:center; }
+  .tier-easy{ background:rgba(76,154,117,0.14); color:var(--sage-deep); }
+  .tier-medium{ background:rgba(242,169,59,0.18); color:var(--marigold-deep); }
+  .tier-hard{ background:rgba(232,103,75,0.14); color:var(--coral); }
+  .meter{ height:9px; border-radius:9px; background:var(--paper-deep); overflow:hidden; }
+  .meter i{ display:block; height:100%; border-radius:9px; }
+  .rung-score{ text-align:right; font-size:13.5px; font-weight:600; }
+  .rung-note{ grid-column:2 / -1; font-size:12.5px; color:var(--ink-soft); margin-top:6px; }
+  .pass{ color:var(--sage-deep); font-weight:600; }
+  .stop{ color:var(--coral); font-weight:600; }
+
+  .stat-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:26px; }
+  @media(max-width:560px){ .stat-row{ grid-template-columns:1fr; } }
+  .stat{ background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  .stat .label{ font-size:11.5px; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-soft); font-weight:600; }
+  .stat .value{ font-family:'Fraunces',serif; font-size:30px; font-weight:700; color:var(--sage-deep); margin-top:4px; }
+  .stat .value.warn{ color:var(--coral); font-size:19px; padding-top:8px; }
+
+  .box{ border-radius:11px; padding:15px 17px; font-size:14px; margin-bottom:11px; }
+  .box-weak{ background:rgba(232,103,75,0.08); border:1px solid rgba(232,103,75,0.25); }
+  .box-weak b{ color:var(--coral); }
+  .box-next{ background:rgba(76,154,117,0.08); border:1px solid rgba(76,154,117,0.25); }
+  .box-next b{ color:var(--sage-deep); }
+  .plain-words{ font-size:14.5px; color:var(--ink); background:var(--paper); border-left:3px solid var(--marigold); border-radius:10px; padding:14px 16px; margin-bottom:22px; }
+
+  /* ---------- whatsapp ---------- */
+  .phone-col h3{ font-size:22px; margin-bottom:6px; }
+  .phone-col > p{ font-size:14.5px; color:var(--ink-soft); margin-bottom:22px; }
+  .phone{ background:#111; border-radius:34px; padding:10px; box-shadow:var(--shadow); max-width:340px; }
+  .phone-screen{ background:var(--wa-bg); border-radius:26px; overflow:hidden; }
+  .wa-bar{ background:var(--wa-green); color:#fff; padding:13px 15px; display:flex; align-items:center; gap:11px; }
+  .wa-avatar{ width:34px; height:34px; border-radius:50%; background:var(--marigold); color:var(--ink); display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:700; font-size:15px; }
+  .wa-name{ font-size:14.5px; font-weight:600; line-height:1.2; }
+  .wa-status{ font-size:11px; opacity:0.75; }
+  .wa-body{ padding:16px 12px 20px; min-height:430px; background-image:radial-gradient(rgba(0,0,0,0.03) 1px, transparent 1px); background-size:14px 14px; }
+  .bubble{ background:#fff; border-radius:10px 10px 10px 2px; padding:11px 13px; font-size:13px; line-height:1.5; box-shadow:0 1px 1px rgba(0,0,0,0.12); max-width:94%; margin-bottom:10px; white-space:pre-line; }
+  .bubble .b-title{ font-weight:700; color:var(--wa-green); display:block; margin-bottom:5px; }
+  .bubble .b-rows{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; background:#F4F6F4; border-radius:6px; padding:8px 9px; margin:7px 0; white-space:pre; overflow-x:auto; }
+  .bubble .b-link{ color:#0b7fd4; }
+  .b-time{ font-size:10px; color:#8a8a8a; text-align:right; margin-top:4px; }
+  .wa-note{ font-size:12.5px; color:var(--ink-soft); margin-top:16px; max-width:340px; }
+
+  /* ---------- how it works strip ---------- */
+  .rules{ background:var(--ink); color:#DCE3F5; padding:60px 0; }
+  .rules h2{ color:#fff; font-size:30px; margin-bottom:10px; }
+  .rules p.sub{ color:#B9C2DE; font-size:15px; margin-bottom:34px; max-width:640px; }
+  .rule-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+  @media(max-width:820px){ .rule-grid{ grid-template-columns:1fr; } }
+  .rule{ background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:14px; padding:22px; }
+  .rule .n{ font-family:'Fraunces',serif; font-size:26px; font-weight:700; color:var(--marigold); }
+  .rule h4{ color:#fff; font-size:16px; font-family:'Inter'; font-weight:700; margin:8px 0 6px; }
+  .rule p{ font-size:13.5px; color:#C4CCE6; }
+
+  .footer-cta{ text-align:center; padding:70px 0; }
+  .footer-cta h2{ font-size:30px; margin-bottom:20px; }
+  .btn{ display:inline-flex; align-items:center; gap:8px; padding:14px 26px; border-radius:32px; font-weight:600; font-size:15px; border:none; cursor:pointer; }
+  .btn-primary{ background:var(--sage); color:#fff; box-shadow:0 14px 30px -12px rgba(76,154,117,0.55); }
+  .btn-ghost{ background:var(--card); color:var(--ink); border:1px solid var(--line); }
+  .disclaimer{ font-size:12px; color:var(--ink-soft); opacity:.75; text-align:center; padding-bottom:36px; }
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a class="logo" href="index.html">Saarthi <span>•</span></a>
+    <a href="login.html" class="nav-cta">Login</a>
+  </nav>
+</header>
+
+<div class="wrap page-head">
+  <span class="eyebrow">Sample report</span>
+  <h1>Every lesson ends with <em>this.</em></h1>
+  <p>
+    Not a grade out of ten. A plain-language account of what your child actually
+    understood, how far they got, and the one thing to revise next — delivered to
+    your WhatsApp the moment they finish.
+  </p>
+</div>
+
+<div class="wrap split">
+
+  <!-- ============ THE REPORT ============ -->
+  <div>
+    <div class="report-card report">
+      <span class="stamp-tab">Today's report</span>
+
+      <div class="kid-line">
+        <div>
+          <div class="kid-name">Aarav's lesson report</div>
+          <div class="kid-meta">Grade 4 · Why Fractions Have Two Numbers · 3 Aug, 6:42 pm</div>
+        </div>
+      </div>
+
+      <div class="headline">
+        Aarav reached the <b>hard level</b> today — that's the top tier. He answered
+        confidently until questions mixed unlike denominators.
+      </div>
+
+      <div class="section-label">How far he got</div>
+      <ul class="ladder">
+        <li class="rung">
+          <span class="tier tier-easy">Easy</span>
+          <div class="meter"><i style="width:80%; background:var(--sage);"></i></div>
+          <span class="rung-score">8 / 10</span>
+          <div class="rung-note"><span class="pass">Passed</span> — needed 5 to move up. Moved to medium.</div>
+        </li>
+        <li class="rung">
+          <span class="tier tier-medium">Medium</span>
+          <div class="meter"><i style="width:80%; background:var(--marigold);"></i></div>
+          <span class="rung-score">4 / 5</span>
+          <div class="rung-note"><span class="pass">Passed</span> — needed 3 to move up. Moved to hard.</div>
+        </li>
+        <li class="rung">
+          <span class="tier tier-hard">Hard</span>
+          <div class="meter"><i style="width:60%; background:var(--coral);"></i></div>
+          <span class="rung-score">3 / 5</span>
+          <div class="rung-note"><span class="stop">Finished here</span> — the hard tier is where today's lesson ended.</div>
+        </li>
+      </ul>
+
+      <div class="stat-row">
+        <div class="stat">
+          <div class="label">Understanding</div>
+          <div class="value">75%</div>
+        </div>
+        <div class="stat">
+          <div class="label">Level reached</div>
+          <div class="value">Hard</div>
+        </div>
+        <div class="stat">
+          <div class="label">Needs revision</div>
+          <div class="value warn">Unlike denominators</div>
+        </div>
+      </div>
+
+      <div class="section-label">In plain words</div>
+      <p class="plain-words">
+        Aarav knows what the numerator and denominator mean and can name them without
+        hesitating. He also worked out that a bigger denominator makes each piece
+        smaller — the idea most children get backwards. Where he slipped was comparing
+        two fractions whose denominators differ, like ⅔ against ¾. He compared the top
+        numbers instead of the size of the pieces.
+      </p>
+
+      <div class="box box-weak">
+        📚 <b>Weak area:</b> comparing fractions with different denominators
+      </div>
+      <div class="box box-next">
+        🎯 <b>Do next:</b> a 10-minute revision game on equivalent fractions — it's
+        already queued for his next session
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ WHATSAPP ============ -->
+  <div class="phone-col">
+    <h3>And this is how it reaches you</h3>
+    <p>No app to open, no dashboard to log into. It arrives where you already are.</p>
+
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="wa-bar">
+          <div class="wa-avatar">S</div>
+          <div>
+            <div class="wa-name">Saarthi</div>
+            <div class="wa-status">business account</div>
+          </div>
+        </div>
+        <div class="wa-body">
+
+          <div class="bubble">
+            <span class="b-title">🎓 Aarav finished a lesson</span>Why Fractions Have Two Numbers
+Grade 4 · 15 minutes
+            <div class="b-rows">Easy     8/10   ✅ passed
+Medium   4/5    ✅ passed
+Hard     3/5    ⏹ finished here</div>
+He reached the <b>hard</b> level — the top tier. 🎉
+            <div class="b-time">6:42 pm</div>
+          </div>
+
+          <div class="bubble">
+            🧠 Understanding: <b>75%</b>
+
+He can name the numerator and denominator, and he understood that a bigger denominator means smaller pieces.
+
+📚 Where he slipped: comparing fractions with different denominators (⅔ vs ¾) — he compared the top numbers instead of the piece sizes.
+            <div class="b-time">6:42 pm</div>
+          </div>
+
+          <div class="bubble">
+            🎯 We've queued a 10-minute revision game on equivalent fractions for his next session. Nothing for you to do.
+
+<span class="b-link">See the full report →</span>
+            <div class="b-time">6:42 pm</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <p class="wa-note">
+      Sent once per completed lesson. Reply <b>STOP</b> to switch to a weekly summary,
+      or turn WhatsApp off and receive it by email instead.
+    </p>
+  </div>
+</div>
+
+<!-- ============ THE RULES BEHIND IT ============ -->
+<section class="rules">
+  <div class="wrap">
+    <h2>Why the report says "hard" and not "75%"</h2>
+    <p class="sub">
+      Every lesson quiz has three tiers. Your child only reaches the next one by
+      showing they understood the last — so the level they reach means more than a
+      raw percentage.
+    </p>
+    <div class="rule-grid">
+      <div class="rule">
+        <div class="n">10</div>
+        <h4>Easy — recall</h4>
+        <p>Facts stated directly in the lesson. Get 5 or more right and the medium tier unlocks.</p>
+      </div>
+      <div class="rule">
+        <div class="n">5</div>
+        <h4>Medium — apply</h4>
+        <p>Connecting two ideas, or using a rule on a new example. Get 3 or more right to unlock hard.</p>
+      </div>
+      <div class="rule">
+        <div class="n">5</div>
+        <h4>Hard — explain</h4>
+        <p>Reasoning about <em>why</em> something works. Reaching this tier at all is a strong signal.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap footer-cta">
+  <h2>Want this for your child?</h2>
+  <a href="login.html" class="btn btn-primary">🟢 Start Free Trial</a>
+  <a href="sample-dashboard.html" class="btn btn-ghost">📊 See the full dashboard</a>
+  <a href="index.html" class="btn btn-ghost">Back to home</a>
+</div>
+
+<p class="disclaimer">
+  Sample report. "Aarav" is illustrative — the numbers, wording, and tiers match the
+  real report format.
+</p>
+
+</body>
+</html>
