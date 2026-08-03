@@ -10,6 +10,9 @@ services:
     runtime: python
     rootDir: backend
     plan: free
+    # Ohio is Render's us-east-2 — same region as the Neon database. The
+    # default (Oregon) puts a cross-country round trip on every query.
+    region: ohio
     domains:
       - api.simuloschool.com
     buildCommand: pip install uv && uv sync --frozen --no-dev
@@ -36,14 +39,21 @@ services:
       - key: ADMIN_NAME
         value: Admin
       - key: CORS_ALLOWED_ORIGINS # must list every origin the browser loads the site from
-        value: https://www.simuloschool.com,https://simuloschool.com
+        # The onrender.com host is kept so the site is testable before the
+        # custom-domain DNS resolves and Render issues certificates.
+        value: https://www.simuloschool.com,https://simuloschool.com,https://simuloschool-frontend.onrender.com
       # Generation runs in GitHub Actions, not here — these are set so an
       # operator can run the job manually against prod from a Render shell.
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: OPENAI_API_KEY
         sync: false
-      - key: S3_ENDPOINT_URL # R2: https://<account-id>.r2.cloudflarestorage.com
+      # Object storage is NOT wired up yet — leave these blank in the
+      # dashboard. /health then reports "storage": false and returns 200; only
+      # video upload is broken. Fill them in (no redeploy of code needed) once
+      # a provider is chosen; the client is plain S3, so any provider works.
+      # Supabase: https://<project-ref>.supabase.co/storage/v1/s3
+      - key: S3_ENDPOINT_URL
         sync: false
       - key: S3_ACCESS_KEY_ID
         sync: false
@@ -51,8 +61,10 @@ services:
         sync: false
       - key: S3_BUCKET
         sync: false
+      # Was "auto", which is R2-specific. Every other provider wants a real
+      # region (Supabase/B2 reject "auto"), so this is per-environment now.
       - key: S3_REGION
-        value: auto
+        sync: false
 
   - type: web
     name: simuloschool-frontend
@@ -64,12 +76,6 @@ services:
     domains:
       - www.simuloschool.com
       - simuloschool.com
-    routes:
-      # Single-page-ish static site: unknown paths fall back to the landing page
-      # rather than Render's 404.
-      - type: rewrite
-        source: /
-        destination: /index.html
     headers:
       - path: /*
         name: X-Frame-Options

@@ -12,15 +12,34 @@ def test_health_ok(client, monkeypatch):
     assert resp.headers[REQUEST_ID_HEADER]
 
 
-def test_health_degraded_when_db_down(client, monkeypatch):
-    def boom():
-        raise RuntimeError("db down")
+def _boom():
+    raise RuntimeError("dependency down")
 
-    monkeypatch.setattr(health, "check_db", boom)
+
+def test_db_down_is_fatal(client, monkeypatch):
+    monkeypatch.setattr(health, "check_db", _boom)
     monkeypatch.setattr(storage, "check_storage", lambda: True)
     resp = client.get("/health")
     assert resp.status_code == 503
-    assert resp.json()["db"] is False
+    assert resp.json() == {"status": "degraded", "db": False, "storage": True}
+
+
+def test_storage_down_is_degraded_not_fatal(client, monkeypatch):
+    """Uploads break, but login/listing/quizzes still serve — a 503 here would
+    have the platform kill a mostly-working instance."""
+    monkeypatch.setattr(health, "check_db", lambda: True)
+    monkeypatch.setattr(storage, "check_storage", _boom)
+    resp = client.get("/health")
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "degraded", "db": True, "storage": False}
+
+
+def test_both_down_is_fatal(client, monkeypatch):
+    monkeypatch.setattr(health, "check_db", _boom)
+    monkeypatch.setattr(storage, "check_storage", _boom)
+    resp = client.get("/health")
+    assert resp.status_code == 503
+    assert resp.json()["status"] == "degraded"
 
 
 def test_request_id_is_echoed(client, monkeypatch):
