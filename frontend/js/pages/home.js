@@ -33,8 +33,12 @@
     navUser.textContent = "Hi, " + name;
     navUser.style.display = "inline";
 
+    // Logged in: the signup CTA becomes the way back into the app, and the
+    // separate Login link is redundant.
     authCta.textContent = "My Lessons";
     authCta.href = "lessons.html";
+    const loginLink = document.getElementById("login-link");
+    if (loginLink) loginLink.hidden = true;
 
     logoutBtn.style.display = "inline-block";
     logoutBtn.addEventListener("click", () => {
