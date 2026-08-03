@@ -47,6 +47,9 @@
     const body = new FormData();
     body.append("title", document.getElementById("title").value.trim());
     body.append("file", fileInput.files[0]);
+    // Optional: when present, transcription is skipped entirely.
+    const transcript = document.getElementById("transcript").value.trim();
+    if (transcript) body.append("transcript", transcript);
 
     submitBtn.disabled = true;
     submitBtn.textContent = "Uploading…";
@@ -204,6 +207,34 @@
         }
       });
       actions.appendChild(retryBtn);
+    }
+
+    if (video.status === "failed" || video.status === "pending_review") {
+      const transcriptBtn = document.createElement("button");
+      transcriptBtn.className = "btn btn-ghost";
+      transcriptBtn.textContent = video.has_transcript
+        ? "Replace transcript"
+        : "Paste transcript";
+      transcriptBtn.title = "Supply the transcript yourself instead of transcribing the audio";
+      transcriptBtn.addEventListener("click", async () => {
+        const text = window.prompt(
+          `Paste the transcript for "${video.title}".\n\nGeneration will rerun from this text — the audio won't be transcribed.`
+        );
+        if (!text || !text.trim()) return;
+        transcriptBtn.disabled = true;
+        try {
+          await Api.request(`/admin/videos/${video.id}/transcript`, {
+            method: "PUT",
+            body: { transcript: text.trim() },
+          });
+          loadPipeline();
+        } catch (err) {
+          listError.textContent = err.message || "Could not save the transcript";
+          listError.hidden = false;
+          transcriptBtn.disabled = false;
+        }
+      });
+      actions.appendChild(transcriptBtn);
     }
 
     const deleteBtn = document.createElement("button");

@@ -32,7 +32,7 @@ from app.models.question import Question
 from app.models.response import Response
 from app.models.user import User
 from app.models.video import Video
-from app.schemas.video import QuestionAdminOut, VideoAdminOut
+from app.schemas.video import QuestionAdminOut, TranscriptIn, VideoAdminOut
 from app.services.pipeline import generate_for_video
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -70,10 +70,15 @@ def upload_video(
     background_tasks: BackgroundTasks,
     title: str = Form(...),
     file: UploadFile = File(...),
+    transcript: str | None = Form(None),
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> VideoAdminOut:
-    """Store the video and immediately start generating its quiz."""
+    """Store the video and immediately start generating its quiz.
+
+    `transcript` is optional. Supply it and transcription is skipped entirely;
+    leave it out and the pipeline transcribes the audio itself.
+    """
     if file.content_type not in ALLOWED_VIDEO_TYPES:
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
@@ -101,6 +106,7 @@ def upload_video(
     video = Video(
         title=title.strip(),
         storage_key=storage_key,
+        transcript=transcript.strip() if transcript and transcript.strip() else None,
         status=VideoStatus.uploaded,
         uploaded_by_user_id=admin.id,
     )
@@ -197,6 +203,34 @@ def retry_video(
     )
     background_tasks.add_task(generate_for_video, video.id)
     return _to_admin_out(video, question_count=0)
+
+
+@router.put("/videos/{video_id}/transcript", response_model=VideoAdminOut)
+def set_transcript(
+    video_id: int,
+    body: TranscriptIn,
+    background_tasks: BackgroundTasks,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> VideoAdminOut:
+    """Attach a transcript to an existing video and regenerate from it.
+
+    Use this when auto-transcription failed or produced poor text: supplying
+    the transcript here skips speech-to-text on the next run.
+    """
+    video = _get_video(db, video_id)
+    if video.status == VideoStatus.processing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This video is currently being processed — wait for it to finish",
+        )
+
+    video.transcript = body.transcript.strip()
+    video.status = VideoStatus.uploaded
+    db.commit()
+    bind(logger, video_id=video.id, user_id=admin.id).info("transcript supplied by admin")
+    background_tasks.add_task(generate_for_video, video.id)
+    return _to_admin_out(video, _question_counts(db, [video.id]).get(video.id, 0))
 
 
 @router.delete("/videos/{video_id}", status_code=status.HTTP_204_NO_CONTENT)

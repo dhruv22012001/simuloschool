@@ -58,12 +58,20 @@ def claim_next_video(db: Session) -> Video | None:
 
 
 def process_claimed_video(db: Session, video: Video) -> None:
-    """Transcribe, generate, and store. The video must already be `processing`."""
+    """Transcribe (if needed), generate, and store.
+
+    A transcript supplied by the admin is used as-is — transcription is skipped
+    entirely, so no speech-to-text provider is involved.
+    """
     log = bind(logger, video_id=video.id)
-    log.info("transcribing video")
-    transcript = transcribe_storage_key(video.storage_key)
-    video.transcript = transcript
-    db.commit()
+    if video.transcript and video.transcript.strip():
+        transcript = video.transcript
+        log.info("using the transcript provided with the video")
+    else:
+        log.info("transcribing video")
+        transcript = transcribe_storage_key(video.storage_key)
+        video.transcript = transcript
+        db.commit()
 
     log.info("generating questions", extra={"ctx": {"transcript_chars": len(transcript)}})
     quiz = generate_quiz(video.title, transcript)

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.base import Difficulty, VideoStatus
 
@@ -23,6 +23,12 @@ class VideoAdminOut(VideoOut):
     uploaded_by_user_id: int
     has_transcript: bool
     question_count: int
+
+
+class TranscriptIn(BaseModel):
+    """A transcript supplied by an admin instead of auto-transcription."""
+
+    transcript: str = Field(min_length=1)
 
 
 class QuestionAdminOut(BaseModel):

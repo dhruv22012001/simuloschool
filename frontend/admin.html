@@ -43,6 +43,15 @@
           <label for="video">Video file</label>
           <input id="video" type="file" accept="video/mp4,video/quicktime,video/webm,video/x-matroska" required />
 
+          <label for="transcript">
+            Transcript <span class="optional">optional — leave blank to transcribe automatically</span>
+          </label>
+          <textarea
+            id="transcript"
+            rows="5"
+            placeholder="Paste the lesson transcript here if you already have one. If you leave this empty, the audio is transcribed for you."
+          ></textarea>
+
           <p id="upload-error" class="error" hidden></p>
           <p id="upload-success" class="success" hidden></p>
 

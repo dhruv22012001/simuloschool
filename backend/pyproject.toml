@@ -14,7 +14,8 @@ dependencies = [
     "psycopg[binary]>=3.1",
     "boto3>=1.34",
     "anthropic>=0.69",  # quiz generation
-    "openai>=1.40",  # Whisper transcription only
+    "openai>=1.40",  # hosted Whisper transcription (optional path)
+    "faster-whisper>=1.0",  # local transcription — no API key required
     "python-multipart>=0.0.9",  # multipart video upload
     "pyjwt>=2.8",
     "passlib==1.7.4",
